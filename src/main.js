@@ -3,6 +3,7 @@ import { categories, intents, projectTypes, usesProjectType, getRoute, filterRes
 import { icon } from './icons.js';
 import { resourceIcons } from './resource-icons.js';
 import { resourceIdentity } from './resource-identity.js';
+import { facets, resourceMeta, collections } from './portal-data.js';
 import './dock.js';
 
 const $ = selector => document.querySelector(selector);
@@ -16,6 +17,7 @@ const state = {
   category: Object.hasOwn(categories, params.get('category')) ? params.get('category') : 'all',
   query: params.get('q') || '',
   sort: ['name', 'newest'].includes(params.get('sort')) ? params.get('sort') : 'curated',
+  ...Object.fromEntries(Object.entries(facets).map(([key, facet]) => [key, Object.hasOwn(facet.options, params.get(key)) ? params.get(key) : ''])),
   page: 1,
   selected: []
 };
@@ -34,7 +36,7 @@ function avatar(resource) {
 }
 function syncUrl() {
   const url = new URL(location.href);
-  for (const [key, value] of Object.entries({ intent: state.intent, project: usesProjectType(state.intent) ? state.project : '', category: state.category, q: state.query, sort: state.sort === 'curated' ? '' : state.sort })) {
+  for (const [key, value] of Object.entries({ intent: state.intent, project: usesProjectType(state.intent) ? state.project : '', category: state.category, q: state.query, sort: state.sort === 'curated' ? '' : state.sort, use: state.use, stack: state.stack, price: state.price })) {
     if (value) url.searchParams.set(key, value);
     else url.searchParams.delete(key);
   }
@@ -48,6 +50,16 @@ function notify(message) {
 }
 function renderCategories() {
   $('#categories').innerHTML = Object.entries(categories).map(([key, label]) => `<button data-category="${key}" aria-pressed="${key === state.category}">${icon(key)}<span>${label}</span><span class="category-count">${categoryTotals[key]}</span></button>`).join('');
+}
+function renderFacets() {
+  $('#facets').innerHTML = Object.entries(facets).map(([key, facet]) => `<label class="facet"><span>${esc(facet.label)}</span><select id="filter-${key}" data-facet="${key}"><option value="">全部${esc(facet.label)}</option>${Object.entries(facet.options).map(([value, label]) => `<option value="${esc(value)}"${state[key] === value ? ' selected' : ''}>${esc(label)}</option>`).join('')}</select></label>`).join('');
+}
+function renderCollections() {
+  $('#collection-items').innerHTML = collections.map((collection, index) => `<a class="collection-card" href="collections/${esc(collection.id)}.html"><div class="collection-card-top"><span class="collection-number">0${index + 1}</span><span>${collection.items.length} 个精选资源</span></div><h3>${esc(collection.title)}</h3><p>${esc(collection.description)}</p><div class="collection-card-bottom"><span>${esc(collection.items.slice(0, 3).map(item => byId.get(item.id).name).join(' · '))}</span><span aria-hidden="true">↗</span></div></a>`).join('');
+}
+function resourceFacts(resource) {
+  const meta = resourceMeta[resource.id];
+  return `<dl class="resource-facts"><div><dt>费用</dt><dd>${esc(facets.price.options[meta.price])}</dd></div><div><dt>用途</dt><dd>${esc(meta.uses.map(value => facets.use.options[value]).join(' / '))}</dd></div><div><dt>技术栈</dt><dd>${esc(meta.stacks.map(value => facets.stack.options[value]).join(' / '))}</dd></div></dl>`;
 }
 function renderFeatured() {
   const features = [
@@ -78,20 +90,22 @@ function renderGuide() {
   }).join('');
 }
 function renderLibrary() {
-  let list = filterResources(state.query, state.category);
+  let list = filterResources(state.query, state.category, state);
   if (state.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
   if (state.sort === 'newest') list = [...list].reverse();
   const pages = Math.max(1, Math.ceil(list.length / pageSize));
   state.page = Math.min(state.page, pages);
   $('#category-title').textContent = categories[state.category];
   $('#result-count').textContent = `找到 ${list.length} 个资源`;
-  $('#featured').hidden = state.category !== 'all' || Boolean(state.query.trim());
-  $('#active-filter').hidden = state.category === 'all' && !state.query.trim();
-  $('#filter-description').textContent = [state.category !== 'all' ? categories[state.category] : '', state.query.trim() ? `搜索“${state.query.trim()}”` : ''].filter(Boolean).join(' · ');
+  const filtering = state.category !== 'all' || Boolean(state.query.trim()) || Object.keys(facets).some(key => state[key]);
+  $('#featured').hidden = filtering;
+  $('#active-filter').hidden = !filtering;
+  $('#filter-description').textContent = [state.category !== 'all' ? categories[state.category] : '', state.query.trim() ? `搜索“${state.query.trim()}”` : '', ...Object.entries(facets).map(([key, facet]) => state[key] ? `${facet.label}：${facet.options[state[key]]}` : '')].filter(Boolean).join(' · ');
   $('#resources').innerHTML = list.slice((state.page - 1) * pageSize, state.page * pageSize).map(resource => {
     const selected = state.selected.includes(resource.id);
     const identity = resourceIdentity(resource);
-    return `<article class="resource"><div class="resource-identity">${avatar(resource)}<div class="resource-title"><h3>${link(resource.url, resource.name)}</h3><span class="resource-origin" title="${esc(identity.origin)}">${esc(identity.origin)}</span></div></div><p>${esc(resource.description)}</p><div class="resource-meta"><span class="resource-category">${categories[resource.category]}</span></div><div class="resource-footer"><button class="text-button" data-detail="${resource.id}" aria-label="查看 ${esc(resource.name)} 详情">查看详情 ↗</button><button class="compare-button" data-compare="${resource.id}" aria-pressed="${selected}" aria-label="${selected ? '移除对比' : '加入对比'} ${esc(resource.name)}">${selected ? '✓ 已选' : '+ 对比'}</button></div></article>`;
+    const price = resourceMeta[resource.id].price;
+    return `<article class="resource"><div class="resource-identity">${avatar(resource)}<div class="resource-title"><h3><a href="resources/${resource.id}.html">${esc(resource.name)}</a></h3><span class="resource-origin" title="${esc(identity.origin)}">${esc(identity.origin)}</span></div></div><p>${esc(resource.description)}</p><div class="resource-meta"><span class="resource-category">${categories[resource.category]}</span><span class="price-tag price-${price}">${price === 'unknown' ? '费用待核实' : facets.price.options[price]}</span></div><div class="resource-footer"><button class="text-button" data-detail="${resource.id}" aria-label="快速查看 ${esc(resource.name)}">快速查看 ↗</button><button class="compare-button" data-compare="${resource.id}" aria-pressed="${selected}" aria-label="${selected ? '移除对比' : '加入对比'} ${esc(resource.name)}">${selected ? '✓ 已选' : '+ 对比'}</button></div></article>`;
   }).join('');
   $('#empty').hidden = list.length !== 0;
   $('.pagination').hidden = list.length === 0;
@@ -107,6 +121,8 @@ function showDetail(id) {
   if (!resource) return;
   const note = resourceNote(resource);
   $('#detail-body').innerHTML = `<div class="detail-identity">${avatar(resource)}<div><span class="tag">${categories[resource.category]}</span><h2 id="detail-title">${esc(resource.name)}</h2></div></div><p class="detail-description">${esc(resource.description)}</p>${note ? `<section class="detail-section"><h3>使用前了解</h3><p>${esc(note)}</p></section>` : ''}<section class="detail-section"><h3>官方 / 作者入口</h3><div class="detail-links"><span class="detail-domain">${esc(new URL(resource.url).hostname.replace(/^www\./, ''))}</span>${resource.related.map(item => link(item.url, item.label)).join('')}</div></section><div class="detail-actions">${link(resource.url, '打开资源', 'primary-link')}<button class="copy-button" data-resource-copy="${id}">${icon('copy')}复制名称与链接</button></div>`;
+  $('#detail-body .detail-description').insertAdjacentHTML('afterend', resourceFacts(resource));
+  $('#detail-body .detail-actions').insertAdjacentHTML('afterend', `<a class="detail-page-link" href="resources/${id}.html">完整详情、同类替代与配套资源 →</a>`);
   $('#detail').showModal();
 }
 function renderTray() {
@@ -129,6 +145,10 @@ async function copy(text, message) {
 function resetFilters() {
   state.query = '';
   state.category = 'all';
+  for (const key of Object.keys(facets)) {
+    state[key] = '';
+    $(`#filter-${key}`).value = '';
+  }
   state.page = 1;
   $('#search').value = '';
   renderCategories();
@@ -192,6 +212,14 @@ document.addEventListener('click', event => {
 });
 $('#search').addEventListener('input', event => { state.query = event.target.value; state.page = 1; renderLibrary(); syncUrl(); });
 $('#sort').addEventListener('change', event => { state.sort = event.target.value; state.page = 1; renderLibrary(); syncUrl(); });
+$('#facets').addEventListener('change', event => {
+  const key = event.target.dataset.facet;
+  if (!Object.hasOwn(facets, key)) return;
+  state[key] = event.target.value;
+  state.page = 1;
+  renderLibrary();
+  syncUrl();
+});
 $('#reset').addEventListener('click', resetFilters);
 $('#clear-filter').addEventListener('click', resetFilters);
 $('#copy-prompt').addEventListener('click', () => void copy(makePrompt(state.intent, state.project), '已复制使用提示，可以粘贴到 AI 对话中。'));
@@ -209,7 +237,7 @@ $('#compare-open').addEventListener('click', () => {
   $('#comparison-body').innerHTML = state.selected.map(id => {
     const resource = byId.get(id);
     const note = resourceNote(resource);
-    return `<article class="comparison-item">${avatar(resource)}<h3>${esc(resource.name)}</h3><h4>适合做什么</h4><p>${esc(resource.description)}</p>${note ? `<h4>选择时注意</h4><p>${esc(note)}</p>` : ''}${link(resource.url, '查看资源', 'primary-link')}</article>`;
+    return `<article class="comparison-item">${avatar(resource)}<h3><a href="resources/${resource.id}.html">${esc(resource.name)}</a></h3>${resourceFacts(resource)}<h4>适合做什么</h4><p>${esc(resource.description)}</p>${note ? `<h4>选择时注意</h4><p>${esc(note)}</p>` : ''}${link(resource.url, '查看资源', 'primary-link')}</article>`;
   }).join('');
   $('#comparison').showModal();
 });
@@ -240,7 +268,7 @@ if ('IntersectionObserver' in window) {
       for (const item of document.querySelectorAll('.toolbar nav a')) item.classList.toggle('current', item.hash === `#${entry.target.id}`);
     }
   }, { rootMargin: '-100px 0px -50% 0px' });
-  for (const section of document.querySelectorAll('#top, #featured, #library, #guide')) observer.observe(section);
+  for (const section of document.querySelectorAll('#top, #featured, #library, #collections, #guide')) observer.observe(section);
 }
 $('#search').value = state.query;
 $('#sort').value = state.sort;
@@ -249,8 +277,10 @@ $('#total-count').textContent = resources.length;
 $('#intents').innerHTML = intents.map(item => `<button class="intent" data-intent="${item.id}" aria-pressed="${item.id === state.intent}" title="${esc(item.description)}">${icon(item.id)}<span>${shortIntent[item.id]}</span></button>`).join('');
 $('[data-icon="copy"]').innerHTML = icon('copy');
 renderCategories();
+renderFacets();
+renderCollections();
 renderFeatured();
 renderGuide();
 renderLibrary();
 renderTray();
-if (params.has('project') && !usesProjectType(state.intent)) syncUrl();
+if ((params.has('project') && !usesProjectType(state.intent)) || Object.keys(facets).some(key => params.has(key) && !state[key])) syncUrl();

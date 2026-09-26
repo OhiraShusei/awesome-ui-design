@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resources } from '../src/resources.js';
+import { facets, resourceMeta, collections } from '../src/portal-data.js';
 import { categories, filterResources, getRoute, makePrompt, intents, usesProjectType } from '../src/catalog.js';
 test('目录 ID 唯一、分类有效，且来源可追溯',()=>{
   assert.ok(resources.length > 0);
@@ -40,6 +41,46 @@ test('搜索支持多个条件、分类、大小写与空结果',()=>{
   assert.deepEqual(filterResources('REACT','assets'),filterResources('react','assets'));
   assert.ok(filterResources('配色 字体','skills').some(r=>r.id==='r54'));
   assert.equal(filterResources('zzzzzzzzzz','all').length,0);
+});
+test('门户元数据和专题没有失效引用，已知费用有核验来源',()=>{
+  const ids=new Set(resources.map(resource=>resource.id));
+  assert.deepEqual(new Set(Object.keys(resourceMeta)),ids);
+  for(const [id,meta] of Object.entries(resourceMeta)){
+    for(const [field,facet] of [['uses','use'],['stacks','stack']]){
+      assert.ok(meta[field].length,`${id} ${field}`);
+      for(const value of meta[field])assert.ok(facets[facet].options[value],`${id} ${value}`);
+    }
+    assert.ok(facets.price.options[meta.price]);
+    if(meta.price!=='unknown'){
+      assert.match(meta.priceSource,/^https:\/\//,`${id} price source`);
+      assert.match(meta.checkedAt,/^\d{4}-\d{2}-\d{2}$/,`${id} checked date`);
+    }
+    for(const field of ['alternatives','companions']){
+      assert.equal(new Set(meta[field]).size,meta[field].length);
+      for(const related of meta[field])assert.ok(ids.has(related)&&related!==id,`${id} ${related}`);
+    }
+  }
+  assert.deepEqual(collections.map(collection=>collection.id).sort(),['design-skills','free-design-kit','react-motion']);
+  for(const collection of collections){
+    assert.ok(collection.title&&collection.description);
+    assert.ok(collection.items.length>=5&&collection.items.length<=8);
+    assert.equal(new Set(collection.items.map(item=>item.id)).size,collection.items.length);
+    for(const item of collection.items)assert.ok(ids.has(item.id)&&item.reason);
+  }
+});
+test('用途、技术栈与费用取交集，并继续受关键词和分类约束',()=>{
+  const filters={use:'motion',stack:'react',price:'free'};
+  const matches=filterResources('','assets',filters);
+  assert.ok(matches.some(resource=>resource.id==='r31'));
+  assert.ok(!matches.some(resource=>resource.id==='r73'));
+  for(const resource of matches){
+    const meta=resourceMeta[resource.id];
+    assert.ok(meta.uses.includes('motion')&&meta.stacks.includes('react')&&meta.price==='free');
+  }
+  assert.deepEqual(filterResources('react bits','assets',filters).map(resource=>resource.id),['r31']);
+  assert.equal(filterResources('react bits','skills',filters).length,0);
+  assert.equal(filterResources('react bits','assets',{...filters,price:'paid'}).length,0);
+  assert.deepEqual(filterResources('','all',{use:'',stack:'',price:''}),resources);
 });
 test('推荐按照任务和项目类型变化，所有推荐指向已收录资源',()=>{
   for(const i of intents)for(const project of ['product','marketing','portfolio']){

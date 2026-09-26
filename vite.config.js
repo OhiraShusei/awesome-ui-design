@@ -1,2 +1,4 @@
 import { defineConfig } from 'vite';
-export default defineConfig({ base: './' });
+import { portalPages } from './src/portal-pages.js';
+
+export default defineConfig({ base: './', plugins: [portalPages()] });

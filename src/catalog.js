@@ -1,4 +1,5 @@
 import { resources } from './resources.js';
+import { facets, resourceMeta } from './portal-data.js';
 export const categories = { all: '全部资源', inspiration: '设计灵感', tools: '设计工具', assets: '素材组件', examples: '优秀案例', skills: 'Agent Skills' };
 export const intents = [
   { id: 'inspire', title: '先找一点灵感', short: '还没想好风格', description: '看看真实页面、配色与交互，找到方向。' },
@@ -40,9 +41,17 @@ export function getRoute(intent, project = 'product') {
   }
   return route;
 }
-export function filterResources(query, category) {
+export function filterResources(query, category, filters = {}) {
   const terms = query.toLocaleLowerCase().trim().split(/\s+/).filter(Boolean);
-  return resources.filter(r => (category === 'all' || r.category === category) && terms.every(term => `${r.name} ${r.description} ${r.note} ${categories[r.category]}`.toLocaleLowerCase().includes(term)));
+  return resources.filter(r => {
+    const meta = resourceMeta[r.id];
+    const labels = [...meta.uses.map(value => facets.use.options[value]), ...meta.stacks.map(value => facets.stack.options[value])];
+    return (category === 'all' || r.category === category)
+      && (!filters.use || meta.uses.includes(filters.use))
+      && (!filters.stack || meta.stacks.includes(filters.stack))
+      && (!filters.price || meta.price === filters.price)
+      && terms.every(term => `${r.name} ${r.description} ${r.note} ${categories[r.category]} ${labels.join(' ')}`.toLocaleLowerCase().includes(term));
+  });
 }
 export function makePrompt(intent, project = 'product') {
   const route = getRoute(intent, project);
