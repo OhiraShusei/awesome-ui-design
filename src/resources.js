@@ -1,4 +1,4 @@
-// 来源：docs/resource-research.md。用途分类沿用 2026-08-31 汇总，不代表实时可用性或排名。
+// 来源：docs/resource-research.md 与 docs/x-resource-research.md；按收录顺序追加，保留稳定 ID。
 export const resources = [
   {
     "id": "r1",
@@ -1165,6 +1165,237 @@ export const resources = [
       }
     ],
     "note": "必须安装完整目录，不能只复制 `SKILL.md`；它偏简洁耐看的桌面工具与产品界面，不是所有品牌营销站的通用答案。",
+    "related": []
+  },
+  {
+    "id": "r67",
+    "name": "Refactoring UI",
+    "category": "inspiration",
+    "description": "面向开发者的 UI 设计方法：视觉层级、间距、字体排版与配色",
+    "url": "https://www.refactoringui.com/",
+    "sources": [
+      {
+        "label": "Wes Bos 推荐 Refactoring UI",
+        "url": "https://x.com/wesbos/status/1072502089102880768"
+      }
+    ],
+    "note": "付费书籍与设计资源套装，官网提供两章免费试读。适合学习如何改进界面，不是可直接安装的组件库。",
+    "related": []
+  },
+  {
+    "id": "r68",
+    "name": "Build UI",
+    "category": "assets",
+    "description": "React、Tailwind 与 Motion 界面教程，以及轮播、滑块、数字动画等代码示例",
+    "url": "https://buildui.com/",
+    "sources": [
+      {
+        "label": "Taylor Otwell 推荐 Build UI",
+        "url": "https://x.com/taylorotwell/status/1645511113470091265"
+      }
+    ],
+    "note": "Recipes 提供公开代码示例，完整课程另行付费。不同示例依赖不同技术栈，使用前查看对应说明。",
+    "related": [
+      {
+        "label": "公开代码示例 Recipes",
+        "url": "https://buildui.com/recipes"
+      }
+    ]
+  },
+  {
+    "id": "r69",
+    "name": "Animations on the Web",
+    "category": "inspiration",
+    "description": "Emil Kowalski 的交互动效课程：缓动、时长、弹簧动画与 CSS / Motion 实践",
+    "url": "https://animations.dev/",
+    "sources": [
+      {
+        "label": "shadcn 推荐 Emil 的动画课程",
+        "url": "https://x.com/shadcn/status/1944804313156419771"
+      },
+      {
+        "label": "Max Barvian 分享 UI 动画学习经验",
+        "url": "https://x.com/MBarvian/status/1831280975109845099"
+      }
+    ],
+    "note": "付费课程，采用阶段性开放报名；2026-09-26 核验时报名关闭，可查看课程介绍并申请预览。不是 Agent Skill。",
+    "related": []
+  },
+  {
+    "id": "r70",
+    "name": "Devouring Details",
+    "category": "inspiration",
+    "description": "Rauno 的交互设计参考手册：意图判断、手势、物理反馈与可操作的 React 原型",
+    "url": "https://devouringdetails.com/",
+    "sources": [
+      {
+        "label": "Andy Allen 推荐交互设计参考手册",
+        "url": "https://x.com/asallen/status/1942969219379007930"
+      },
+      {
+        "label": "Rauno 介绍 Devouring Details（作者发布）",
+        "url": "https://x.com/raunofreiberg/status/1962882635501330637"
+      }
+    ],
+    "note": "付费互动手册，部分章节可免费预览；以交互原型和设计解释为主，不是循序渐进的编程课程。下载组件使用前查看授权。",
+    "related": []
+  },
+  {
+    "id": "r71",
+    "name": "Eased Gradient Cards",
+    "category": "tools",
+    "description": "拖动贝塞尔曲线，对比线性与缓动渐变，复制用于图片遮罩和卡片叠层的 CSS",
+    "url": "https://www.jhey.dev/demos/2026/eased-gradient-cards/",
+    "sources": [
+      {
+        "label": "Jhey 展示可调渐变曲线（作者发布）",
+        "url": "https://x.com/jh3yy/status/2103548937617731999"
+      },
+      {
+        "label": "Jhey 分享交互演示入口",
+        "url": "https://x.com/jh3yy/status/2103551044039164301"
+      }
+    ],
+    "note": "可直接使用的浏览器演示，支持复制 CSS；适合调节渐变过渡，不代替文字与背景的对比度检查。",
+    "related": []
+  },
+  {
+    "id": "r72",
+    "name": "shadcn/lint",
+    "category": "tools",
+    "description": "将 Tailwind 设计系统规则变成 lint 检查，提示 Agent 使用正确组件、变体与主题值",
+    "url": "https://github.com/shadcn-ui/lint",
+    "sources": [
+      {
+        "label": "shadcn 发布设计系统检查工具（作者发布）",
+        "url": "https://x.com/shadcn/status/2099534231114314145"
+      },
+      {
+        "label": "shadcn 宣布支持 Vue 与 Svelte",
+        "url": "https://x.com/shadcn/status/2102408442086556147"
+      }
+    ],
+    "note": "面向 Tailwind v4，支持 React、Vue、Svelte；需配置 ESLint 或 Oxlint，未要求使用 shadcn/ui。Oxlint 对 Vue / Svelte 仅检查 script，不检查模板。",
+    "related": [
+      {
+        "label": "官方规则说明",
+        "url": "https://github.com/shadcn-ui/lint/blob/main/docs/rules.md"
+      }
+    ]
+  },
+  {
+    "id": "r73",
+    "name": "Magic UI",
+    "category": "assets",
+    "description": "面向落地页的 React 动画组件，结合 TypeScript、Tailwind CSS 与 Motion",
+    "url": "https://magicui.design/",
+    "sources": [
+      {
+        "label": "Mckay Wrigley 推荐 Magic UI 落地页工作流",
+        "url": "https://x.com/mckaywrigley/status/1831098800351719924"
+      }
+    ],
+    "note": "提供免费开源组件，Pro 页面区块与模板另行收费。使用前确认组件依赖与当前项目版本匹配。",
+    "related": []
+  },
+  {
+    "id": "r74",
+    "name": "Aceternity UI",
+    "category": "assets",
+    "description": "可复制的 React 动画组件与页面区块，适合卡片、背景和落地页交互",
+    "url": "https://ui.aceternity.com/",
+    "sources": [
+      {
+        "label": "Adrian / JavaScript Mastery 推荐动画组件",
+        "url": "https://x.com/jsmasterypro/status/1755637825964282097"
+      }
+    ],
+    "note": "主要采用 React、Tailwind CSS 和 Motion；站内包含收费模板及 All-Access，具体组件的访问与授权以官网为准。",
+    "related": []
+  },
+  {
+    "id": "r75",
+    "name": "daisyUI",
+    "category": "assets",
+    "description": "Tailwind CSS 语义化组件与主题，快速搭建按钮、表单、导航和产品界面",
+    "url": "https://daisyui.com/",
+    "sources": [
+      {
+        "label": "Dev Ed 分享 daisyUI 使用体验",
+        "url": "https://x.com/developedbyed/status/1633913146422198276"
+      }
+    ],
+    "note": "基于 Tailwind CSS，组件样式本身不附带 JavaScript 运行时；业务交互仍需自行实现，安装时核对版本要求。",
+    "related": []
+  },
+  {
+    "id": "r76",
+    "name": "Open Peeps",
+    "category": "assets",
+    "description": "可组合表情、发型和姿势的手绘人物插画，适合用户画像、分镜和产品空状态",
+    "url": "https://www.openpeeps.com/",
+    "sources": [
+      {
+        "label": "Harika Bommu 推荐用 Open Peeps 绘制分镜",
+        "url": "https://x.com/harikabommu/status/1237408254398955522"
+      }
+    ],
+    "note": "官网标明采用 CC0，可用于个人与商业项目；人物部件可以组合，适合保持一组插画的风格一致。",
+    "related": []
+  },
+  {
+    "id": "r77",
+    "name": "SVG Backgrounds",
+    "category": "tools",
+    "description": "自定义 SVG 背景、图案与分割线，复制 CSS 或 SVG 用于网页视觉设计",
+    "url": "https://www.svgbackgrounds.com/",
+    "sources": [
+      {
+        "label": "Jeffrey at Lytbox 推荐 SVG 背景工具",
+        "url": "https://x.com/jeffreyatlytbox/status/1086847076376313856"
+      }
+    ],
+    "note": "免费素材要求署名；付费方案提供更多素材和免署名权益，使用前查看所选素材的许可。",
+    "related": [
+      {
+        "label": "素材许可",
+        "url": "https://www.svgbackgrounds.com/license/"
+      }
+    ]
+  },
+  {
+    "id": "r78",
+    "name": "UI-Layouts",
+    "category": "assets",
+    "description": "可复制的 UI 组件、视觉效果和页面区块，适合探索布局与交互细节",
+    "url": "https://ui-layouts.com/",
+    "sources": [
+      {
+        "label": "RicoUI 推荐 UI-Layouts 的设计与组件细节",
+        "url": "https://x.com/ricouii/status/1956992888023417163"
+      }
+    ],
+    "note": "官网同时提供免费内容和 Pro 页面区块；挑选组件时确认技术栈、依赖及授权要求。",
+    "related": [
+      {
+        "label": "配套设计工具 UI Tools",
+        "url": "https://tools.ui-layouts.com/"
+      }
+    ]
+  },
+  {
+    "id": "r79",
+    "name": "UI Tools",
+    "category": "tools",
+    "description": "阴影、SVG 线条、Clip-Path、网格渐变、背景和配色辅助工具",
+    "url": "https://tools.ui-layouts.com/",
+    "sources": [
+      {
+        "label": "RicoUI 推荐 UI-Layouts 配套工具",
+        "url": "https://x.com/ricouii/status/1956992892184264743"
+      }
+    ],
+    "note": "UI-Layouts 的独立工具站，可按具体视觉效果选择工具；生成结果仍需放进真实页面检查。",
     "related": []
   }
 ];

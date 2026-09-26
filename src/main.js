@@ -15,7 +15,7 @@ const state = {
   project: projectTypes.some(item => item.id === params.get('project')) ? params.get('project') : 'product',
   category: Object.hasOwn(categories, params.get('category')) ? params.get('category') : 'all',
   query: params.get('q') || '',
-  sort: 'curated',
+  sort: ['name', 'newest'].includes(params.get('sort')) ? params.get('sort') : 'curated',
   page: 1,
   selected: []
 };
@@ -34,7 +34,7 @@ function avatar(resource) {
 }
 function syncUrl() {
   const url = new URL(location.href);
-  for (const [key, value] of Object.entries({ intent: state.intent, project: usesProjectType(state.intent) ? state.project : '', category: state.category, q: state.query })) {
+  for (const [key, value] of Object.entries({ intent: state.intent, project: usesProjectType(state.intent) ? state.project : '', category: state.category, q: state.query, sort: state.sort === 'curated' ? '' : state.sort })) {
     if (value) url.searchParams.set(key, value);
     else url.searchParams.delete(key);
   }
@@ -80,6 +80,7 @@ function renderGuide() {
 function renderLibrary() {
   let list = filterResources(state.query, state.category);
   if (state.sort === 'name') list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+  if (state.sort === 'newest') list = [...list].reverse();
   const pages = Math.max(1, Math.ceil(list.length / pageSize));
   state.page = Math.min(state.page, pages);
   $('#category-title').textContent = categories[state.category];
@@ -190,7 +191,7 @@ document.addEventListener('click', event => {
   }
 });
 $('#search').addEventListener('input', event => { state.query = event.target.value; state.page = 1; renderLibrary(); syncUrl(); });
-$('#sort').addEventListener('change', event => { state.sort = event.target.value; state.page = 1; renderLibrary(); });
+$('#sort').addEventListener('change', event => { state.sort = event.target.value; state.page = 1; renderLibrary(); syncUrl(); });
 $('#reset').addEventListener('click', resetFilters);
 $('#clear-filter').addEventListener('click', resetFilters);
 $('#copy-prompt').addEventListener('click', () => void copy(makePrompt(state.intent, state.project), '已复制使用提示，可以粘贴到 AI 对话中。'));
@@ -242,6 +243,7 @@ if ('IntersectionObserver' in window) {
   for (const section of document.querySelectorAll('#top, #featured, #library, #guide')) observer.observe(section);
 }
 $('#search').value = state.query;
+$('#sort').value = state.sort;
 $('#project-choices').innerHTML = projectTypes.map(item => `<button data-project="${item.id}" aria-pressed="${item.id === state.project}">${item.label}</button>`).join('');
 $('#total-count').textContent = resources.length;
 $('#intents').innerHTML = intents.map(item => `<button class="intent" data-intent="${item.id}" aria-pressed="${item.id === state.intent}" title="${esc(item.description)}">${icon(item.id)}<span>${shortIntent[item.id]}</span></button>`).join('');

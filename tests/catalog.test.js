@@ -5,7 +5,17 @@ import { categories, filterResources, getRoute, makePrompt, intents, usesProject
 test('目录 ID 唯一、分类有效，且来源可追溯',()=>{
   assert.ok(resources.length > 0);
   assert.equal(new Set(resources.map(r=>r.id)).size,resources.length);
-  for(const r of resources){assert.ok(categories[r.category]);assert.ok(r.name && r.description);assert.match(r.url,/^https?:\/\//);assert.ok(r.sources.length);for(const s of r.sources)assert.equal(new URL(s.url).hostname,'linux.do');}
+  for(const r of resources){
+    assert.ok(categories[r.category]);assert.ok(r.name && r.description);
+    assert.match(r.url,/^https?:\/\//);assert.ok(r.sources.length);
+    for(const s of r.sources){
+      assert.ok(s.label);
+      const source=new URL(s.url);
+      assert.equal(source.protocol,'https:');
+      assert.ok(['linux.do','x.com','twitter.com'].includes(source.hostname));
+      if(source.hostname!=='linux.do')assert.match(source.pathname,/^\/[A-Za-z0-9_]+\/status\/\d+$/);
+    }
+  }
 });
 
 test('可见的项目选择会改变路线，隐藏的选择不影响提示词',()=>{

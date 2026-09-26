@@ -33,6 +33,19 @@ try{
   assert.equal(await page.locator('.resource').count(),12);
   assert.equal(await page.locator('a[href*="directions.html"], a[href*="resource-research.md"], a[href="#about"]').count(),0);
   assert.equal(await page.locator('#result-count').textContent(),`找到 ${resources.length} 个资源`);
+  await page.locator('#sort').selectOption('newest');
+  assert.equal(await page.locator('#resources [data-detail]').first().getAttribute('data-detail'),resources.at(-1).id);
+  await page.reload();
+  assert.equal(await page.locator('#sort').inputValue(),'newest');
+  await page.locator('[data-category="assets"]').click();
+  const newestAsset=resources.filter(resource=>resource.category==='assets').at(-1);
+  assert.equal(await page.locator('#resources [data-detail]').first().getAttribute('data-detail'),newestAsset.id);
+  await page.locator('#search').fill(newestAsset.name);
+  await page.locator(`#resources [data-detail="${newestAsset.id}"]`).click();
+  assert.equal(await page.locator('#detail-title').textContent(),newestAsset.name);
+  assert.equal(await page.locator('#detail-body .primary-link').getAttribute('href'),newestAsset.url);
+  await page.keyboard.press('Escape');
+  await page.goto(base);
   const decodedIcons = await page.evaluate(async ({base,icons}) => Promise.all(icons.map(file => new Promise(resolve => {
     const image = new Image();
     image.onload = () => resolve({file,loaded:image.naturalWidth > 0 && image.naturalHeight > 0});
